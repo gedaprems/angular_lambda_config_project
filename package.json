@@ -1,0 +1,14 @@
+{
+  "name": "lambda-config-app",
+  "version": "1.0.0",
+  "description": "",
+  "private": true,
+  "scripts": {
+    "start": "concurrently \"npm run start:frontend\" \"npm run start:backend\"",
+    "start:frontend": "cd apps/frontend && ng serve",
+    "start:backend": "cd apps/backend && node index.js"
+  },
+  "devDependencies": {
+    "concurrently": "^7.6.0"
+  }
+}

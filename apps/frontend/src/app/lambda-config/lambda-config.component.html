@@ -1,0 +1,86 @@
+<div *ngIf="isLoading" class="loader-overlay">
+  <div class="loader-container">
+    <mat-spinner diameter="100"></mat-spinner>
+    <p>Loading...</p>
+  </div>
+</div>
+
+<div class="lambda-config">
+	<div class="config-controls">
+		<form [formGroup]="form">
+			<div class="env-group" formArrayName="groups">
+				<div *ngFor="let group of groups.controls; let i = index" [formGroupName]="i">
+					<div class="group-container" [attr.data-group]="i">
+						
+						<!-- mat-select dropdown -->
+						<mat-form-field appearance="fill">
+							<mat-label>Select Environment</mat-label>
+							<mat-select formControlName="selectedEnv" placeholder="Select">
+								<mat-option *ngFor="let option of envOptions" [value]="option.value">
+									{{ option.label }}
+								</mat-option>
+							</mat-select>
+						</mat-form-field>
+		
+						<!-- mat-radio-group with 3 options (US, OUS, Clinical) -->
+						<mat-radio-group formControlName="selectedDomain" aria-label="Select region">
+							<mat-radio-button *ngFor="let radio of domainOptions" [value]="radio.value">
+								{{ radio.label }}
+							</mat-radio-button>
+						</mat-radio-group>
+		
+					</div>
+				</div>
+			</div>
+		
+			<div class="button-container">
+				<button mat-button mat-flat-button (click)="fetchConfigDataFromLocal()">Last Fetched Config</button>
+				<button mat-button mat-stroked-button (click)="fetchLatest()">Fetch Latest</button>
+			</div>
+		</form>
+		<div class="config-row" *ngIf="showConfig">
+			<div class="select-dropdown">
+				<mat-form-field appearance="fill">
+					<mat-label>Select Function Name</mat-label>
+					<mat-select [(value)]="selectedFunctionName" (selectionChange)="onFunctionNameChange($event.value)" name="config">
+						<mat-option *ngFor="let functionName of uniqueFunctionNames" [value]="functionName">
+							{{ functionName }}
+						</mat-option>
+					</mat-select>
+				</mat-form-field>
+			</div>
+
+			<div class="search-field">
+				<mat-form-field appearance="fill">
+					<mat-label>Search</mat-label>
+					<input matInput [(ngModel)]="searchKey" (input)="filterTable()" placeholder="Search for a Key" />
+				</mat-form-field>
+			</div>
+		</div>
+	</div>
+	<div class="config-table" *ngIf="showConfig">
+		<table mat-table [dataSource]="filteredData">
+			<ng-container matColumnDef="Key" sticky>
+				<th mat-header-cell *matHeaderCellDef> Key </th>
+				<td mat-cell *matCellDef="let row" [ngClass]="{'highlight-row': isRowHighlighted(row)}">
+					<span [matTooltip]="row.Key">{{ row.Key }}</span>
+				</td>
+			</ng-container>
+	
+			<ng-container *ngFor="let env of envKeys" matColumnDef="{{env}}">
+				<th mat-header-cell *matHeaderCellDef> {{ env | uppercase }} - {{envResponses[env].lastFetched | date:'dd MMM yyyy, hh:mm a'}}</th>
+				<td mat-cell *matCellDef="let row" [ngClass]="{'highlight-row': isRowHighlighted(row)}">
+					<ng-container *ngIf="isObject(row[env]); else displayValue">
+						<pre matTooltip="{{ row[env] | json }}">{{ row[env] | json }}</pre>
+					</ng-container>
+					<ng-template #displayValue>
+						<span [matTooltip]="row[env] || '-'">{{ row[env] || '-' }}</span>
+					</ng-template>
+				</td>
+			</ng-container>
+	
+			<tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+			<tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+		</table>
+	</div>
+</div>
